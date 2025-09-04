@@ -37,9 +37,18 @@ jobs:
         echo "Contents of allure-results directory:"
         ls -la target/allure-results/ || echo "allure-results directory does not exist"
         
-    - name: Create allure-results directory if it doesn't exist
-      run: mkdir -p target/allure-results
-      
+    - name: Generate Allure results
+      run: |
+        # Create allure-results directory if it doesn't exist
+        mkdir -p target/allure-results
+        # Generate Allure results from test execution
+        mvn allure:report -Dallure.results.directory=target/allure-results
+        
+    - name: List allure-results after generation
+      run: |
+        echo "Contents of allure-results directory after generation:"
+        ls -la target/allure-results/ || echo "allure-results directory still does not exist"
+        
     - name: Upload Allure Results
       uses: actions/upload-artifact@v4
       if: always()
@@ -80,9 +89,21 @@ jobs:
         
     - name: Download Allure Results
       uses: actions/download-artifact@v4
+      continue-on-error: true
       with:
         name: allure-results
         path: target/allure-results
+        
+    - name: Check if Allure results exist
+      run: |
+        if [ -d "target/allure-results" ] && [ "$(ls -A target/allure-results)" ]; then
+          echo "Allure results found"
+          ls -la target/allure-results/
+        else
+          echo "No Allure results found, creating empty directory"
+          mkdir -p target/allure-results
+          echo "{}" > target/allure-results/empty-result.json
+        fi
         
     - name: Generate Allure Report
       run: |
@@ -94,6 +115,7 @@ jobs:
       with:
         name: allure-report
         path: target/site/allure-maven-plugin
+        if-no-files-found: warn
         
     - name: Deploy Allure Report to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
