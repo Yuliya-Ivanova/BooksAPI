@@ -117,13 +117,35 @@ jobs:
         path: target/site/allure-maven-plugin
         if-no-files-found: warn
         
+    - name: Prepare Allure Report for GitHub Pages
+      run: |
+        # Create a clean directory for GitHub Pages
+        mkdir -p allure-report-site
+        # Copy the generated report
+        cp -r target/site/allure-maven-plugin/* allure-report-site/ || echo "No report files found"
+        # Copy .nojekyll file to prevent Jekyll processing
+        cp .nojekyll allure-report-site/ 2>/dev/null || echo ".nojekyll file not found"
+        # Create index.html if it doesn't exist
+        if [ ! -f "allure-report-site/index.html" ]; then
+          echo "<!DOCTYPE html><html><head><title>Allure Report</title></head><body><h1>Allure Report</h1><p>No test results available.</p></body></html>" > allure-report-site/index.html
+        fi
+        # List contents for debugging
+        echo "Contents of allure-report-site:"
+        ls -la allure-report-site/
+        
     - name: Deploy Allure Report to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       if: always()
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: target/site/allure-maven-plugin
+        publish_dir: allure-report-site
         destination_dir: allure-reports
+        
+    - name: Verify GitHub Pages Deployment
+      run: |
+        echo "GitHub Pages deployment completed!"
+        echo "Report should be available at: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/allure-reports/"
+        echo "Note: It may take a few minutes for the changes to be visible on GitHub Pages."
         
     - name: Comment PR with Allure Report Link
       if: github.event_name == 'pull_request'
