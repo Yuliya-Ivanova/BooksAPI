@@ -1,0 +1,1 @@
+{"total":2,"items":[{"uid":"ef2c7e651372c6e53a057e227573c1b6","name":"Get Book by ID validation","statistic":{"failed":1,"broken":0,"skipped":0,"passed":7,"unknown":0,"total":8}},{"uid":"dda87d58bab1f91b525dc88e3228ff4c","name":"Authentication Security Tests","statistic":{"failed":0,"broken":0,"skipped":0,"passed":4,"unknown":0,"total":4}}]}
